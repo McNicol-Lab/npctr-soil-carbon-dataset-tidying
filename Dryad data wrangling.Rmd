@@ -7,7 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r load packages, include = FALSE}
+```{r load-packages, include = FALSE}
 # install.packages("tindyverse")
 # install.packages("readxl")
 library("readxl")
@@ -21,7 +21,7 @@ library("janitor")
 
 ## R Markdown
 ## Explore Sandborn Lewis Data, clean col names, convert to lowercase
-```{r read in sandborn_lewis_data, eval= FALSE }
+```{r read-in-sandborn_lewis_data, eval= FALSE }
 sandborn_lewis_data <- read_excel("1 Sandborn Lewis data.xlsx") %>%  
   janitor::clean_names() %>% 
   rename_with(tolower) %>%
@@ -35,7 +35,7 @@ glimpse(sandborn_lewis_data)
 
 ## Retain Tidy Excel Columns A-F,J-L, Q, S; create new dataframe sandborn_lewis_select_variables
 
-```{r new dataframe with select variables, eval = FALSE}
+```{r new-dataframe-with-select-variables, eval = FALSE}
 sandborn_lewis_data <- select(sandborn_lewis_data, source, id, order, lat, lon, latlon_q, horizon, depth1, depth2, total_depth, bulk_density, cconc)
 glimpse(sandborn_lewis_data)
 ``` 
