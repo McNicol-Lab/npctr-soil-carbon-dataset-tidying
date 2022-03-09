@@ -21,7 +21,10 @@ library("janitor")
 
 ## R Markdown
 ## Explore Sandborn Lewis Data, clean col names, convert to lowercase
-```{r read-in-sandborn_lewis_data, eval= FALSE, warning = F}
+
+### Add another line in your mutate function to calculate horizon depth >- 100 cm
+
+```{r read-in-sandborn_lewis_data, warning = F}
 data <- read_excel("1 Sandborn Lewis data.xlsx") %>%  
   janitor::clean_names() %>% 
   rename_with(tolower) %>%
@@ -35,7 +38,7 @@ glimpse(data)
 
 ## Retain Tidy Excel Columns A-F,J-L, Q, S; create new dataframe sandborn_lewis_select_variables
 
-```{r new-dataframe-with-select-variables, eval = FALSE}
+```{r new-dataframe-with-select-variables}
 data_subset <- data %>% 
   select(source, id, order, lat, lon, latlon_q, horizon, depth1, depth2, total_depth, bulk_density, cconc)
 glimpse(data_subset)
@@ -63,4 +66,31 @@ data_subset <- data_subset %>%
 data_subset
 ```
 
+Identified a weird row for a single profile `id` missing all important variables. 
+
+Drop the weird row `id` = `BC09-07` where `horizon` = `Cg`
+
+```{r remove-weird-row}
+data_subset <- data_subset %>% 
+  filter(id != "BC09-06" | horizon != "Cg")
+```
+
+## Extract soil horizon from `horizon` and call it `horizon_simple`
+
+```{r}
+# 
+```
+
+
+## Calculate carbon content for each horizon
+
+```{r}
+
+```
+
+
+## Save the tidy dataset as a .csv
+
+
+## Create summary tables for `carbon_stock`, `carbon_stock_1m`
 
