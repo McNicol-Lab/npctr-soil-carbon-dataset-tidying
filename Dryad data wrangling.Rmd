@@ -40,7 +40,7 @@ glimpse(data)
 
 ```{r new-dataframe-with-select-variables}
 data_subset <- data %>% 
-  select(source, id, order, lat, lon, latlon_q, horizon, depth1, depth2, total_depth, bulk_density, cconc)
+  select(source, id, order, lat, lon, latlon_q, horizon, depth1, depth2, total_depth, bulk_density, cf, cconc)
 glimpse(data_subset)
 ``` 
 
@@ -76,21 +76,30 @@ data_subset <- data_subset %>%
 ```
 
 ## Extract soil horizon from `horizon` and call it `horizon_simple`
-
-```{r}
-# 
+```{r create-horizon-simple}
+data_subset$horizon_simple = substr(data_subset$horizon,1,1)
+data_subset
 ```
-
-
 ## Calculate carbon content for each horizon
 
-```{r}
-
+```{r mutate-cf-na-to-0}
+data_subset <- data_subset %>%
+ mutate(cf = ifelse(is.na(cf), 0, cf),
+        cf_1_values = as.numeric(cf))
+data_subset
 ```
 
+```{r calculate-ccontent-from-function}
+data_subset <- data_subset %>%
+mutate(ccontent = (cconc/100*bulk_density)*(100*100*total_depth)*((100 - cf)/100))
+data_subset
+```
 
 ## Save the tidy dataset as a .csv
 
+```{r}
+write.csv(data_subset, 'Sandborn_Lewis_Tidy.csv')
+```
 
 ## Create summary tables for `carbon_stock`, `carbon_stock_1m`
 
