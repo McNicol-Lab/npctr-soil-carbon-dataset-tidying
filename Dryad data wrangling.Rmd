@@ -40,7 +40,19 @@ glimpse(data)
 
 ```{r new-dataframe-with-select-variables}
 data_subset <- data %>% 
-  select(source, id, order, lat, lon, latlon_q, horizon, depth1, depth2, total_depth, bulk_density, cf, cconc)
+  select(source, 
+         id, 
+         order, 
+         lat, 
+         lon, 
+         latlon_q, 
+         horizon, 
+         depth1, 
+         depth2, 
+         total_depth, 
+         bulk_density, 
+         cf, 
+         cconc)
 glimpse(data_subset)
 ``` 
 
