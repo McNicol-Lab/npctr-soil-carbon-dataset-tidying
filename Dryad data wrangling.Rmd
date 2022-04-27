@@ -16,6 +16,7 @@ library("dplyr")
 library("openintro")
 library("skimr")
 library("janitor")
+library("psych")
 ```
 
 
@@ -32,7 +33,11 @@ data <- read_excel("1 Sandborn Lewis data.xlsx") %>%
          depth1 = as.numeric(depth1),
          depth2 = as.numeric(depth2),
          cconc = as.numeric(cconc),
-         total_depth=depth2-depth1)
+         total_depth=depth2-depth1,
+         depth_100 = ifelse(depth2<=-100,
+                            abs(depth1-(-100)),
+                            abs(depth2-depth1))
+  )
 glimpse(data)
 ```
 
@@ -103,9 +108,12 @@ data_subset
 
 ```{r calculate-ccontent-from-function}
 data_subset <- data_subset %>%
-mutate(ccontent = (cconc/100*bulk_density)*(100*100*total_depth)*((100 - cf)/100))
+mutate(ccontent = (cconc/100*bulk_density)*
+                  (100*100*total_depth)*
+                  ((100 - cf)/100))
 data_subset
 ```
+
 
 ## Save the tidy dataset as a .csv
 
@@ -114,4 +122,20 @@ write.csv(data_subset, 'Sandborn_Lewis_Tidy.csv')
 ```
 
 ## Create summary tables for `carbon_stock`, `carbon_stock_1m`
+
+```{r carbon_stock-summary-table}
+describeBy(data_subset, group=data_subset$carbon_stock)
+```
+
+```{r carbon_stock_1m-summary-table}
+describeBy(data_subset, group=data_subset$carbon_stock_1m)
+```
+
+
+
+
+
+
+
+ 
 
