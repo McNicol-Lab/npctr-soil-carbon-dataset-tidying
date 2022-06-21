@@ -1,0 +1,60 @@
+---
+title: "Shaw_Only_Sites"
+output: html_document
+date: "`2022-06-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-packages, include = FALSE}
+# install.packages("tindyverse")
+# install.packages("readxl")
+library("readxl")
+library("tidyverse")
+library("dplyr")
+library("openintro")
+library("skimr")
+library("janitor")
+library("psych")
+```
+
+
+## R Markdown
+## Explore data, clean col names, convert to lowercase, tidy data classes
+```{r read-in-shaw-only-sites, eval=T, echo=FALSE, message=FALSE, warning=FALSE}
+library(readxl)
+X5_Shaw_only_sites <- read_excel("5 Shaw (only sites).xlsx")
+X5_Shaw_only_sites
+```
+
+
+### Add another line in your mutate function to calculate horizon depth >- 100 cm
+
+```{r lower-variable-names, warning = F}
+shaw_only_sites_data <- X5_Shaw_only_sites %>%  
+  janitor::clean_names() %>% 
+  rename_with(tolower)
+glimpse(shaw_only_sites_data)
+```
+## Retain Tidy Excel Columns A-F,J-L, Q, S
+## Retaining these idenitites are not needed
+
+
+## Rows 22-40 and 46-76 are not used due to low lat/lon quality in original dataset
+
+
+## Soil horizons are written as their full name in original dataset. Extract simple horizon names somehow?
+
+## Calculate carbon content for each horizon in shaw_only_sites dataset
+
+## calculate carbon content
+
+
+## Save the tidy dataset as a .csv
+
+
+## Create summary tables for `carbon_stock`, `carbon_stock_1m`
+
+
