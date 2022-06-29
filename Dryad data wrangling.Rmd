@@ -41,7 +41,7 @@ data <- read_excel("1 Sandborn Lewis data.xlsx") %>%
 glimpse(data)
 ```
 
-## Retain Tidy Excel Columns A-F,J-L, Q, S; create new dataframe sandborn_lewis_select_variables
+## Retain Tidy Excel Columns A-F,J-L, Q, S; create new dataframe
 
 ```{r new-dataframe-with-select-variables}
 data_subset <- data %>% 
@@ -113,6 +113,14 @@ mutate(ccontent = (cconc/100*bulk_density)*
                   ((100 - cf)/100))
 data_subset
 ```
+
+## Create carbon_stock variable
+```{r}
+data_subset <- data_subset %>%
+mutate(carbon_stock = (cconc*total_depth*bulk_density))
+data_subset
+```
+
 
 
 ## Save the tidy dataset as a .csv
