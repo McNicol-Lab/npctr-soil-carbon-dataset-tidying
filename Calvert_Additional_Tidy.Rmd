@@ -20,6 +20,7 @@ library("openintro")
 library("skimr")
 library("janitor")
 library("psych")
+library("stringr")
 ```
 ## Explore data, clean col names, convert to lowercase, tidy data classes
 
