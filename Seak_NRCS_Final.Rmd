@@ -1,0 +1,141 @@
+---
+title: "Seak_NRCS_Final"
+output: html_document
+date: '2022-06-20'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r load-packages, include = FALSE}
+# install.packages("tindyverse")
+# install.packages("readxl")
+library("readxl")
+library("tidyverse")
+library("dplyr")
+library("openintro")
+library("skimr")
+library("janitor")
+library("psych")
+library("stringr")
+```
+
+
+## R Markdown
+## Explore data , clean col names, convert to lowercase
+
+### Add another line in your mutate function to calculate horizon depth >- 100 cm
+```{r}
+data <- read_excel("6 Seak NRCS FINAL.xlsx")
+glimpse(data)
+```
+
+
+```{r read-in-seak-nrcs-final-data, warning = F}
+data <- read_excel("6 Seak NRCS FINAL.xlsx") %>% 
+  janitor::clean_names() %>% 
+  rename_with(tolower) %>%
+  mutate(bulk density = as.numeric(bulk_density),
+         depth1 = as.numeric(depth1),
+         depth2 = as.numeric(depth2),
+         cconc = as.numeric(cconc),
+         total_depth=depth2-depth1,
+         depth_100 = ifelse(depth2<=-100,
+                            abs(depth1-(-100)),
+                            abs(depth2-depth1))
+  )
+glimpse(data)
+```
+
+## Retain Tidy Excel Columns A-F,J-L, Q, S; create new dataframe
+
+```{r new-dataframe-with-select-variables}
+data_subset <- data %>% 
+  select(source, 
+         id, 
+         order, 
+         lat, 
+         lon, 
+         latlon_q, 
+         horizon, 
+         depth1, 
+         depth2, 
+         total_depth, 
+         bulk_density, 
+         cf, 
+         cconc)
+glimpse(data_subset)
+``` 
+
+## Create an index column specifiying if a bulk density value is gap-filled or not
+
+Create a vector of gap-filled values
+
+```{r bulk-density-gap-filled-values}
+bd_fill_values <- data_subset %>%
+  select(bulk_density) %>%
+  slice(1:3, 8:10, 16:28, 34:39, 46:146) %>%
+  filter(!is.na(bulk_density)) %>% 
+  distinct() %>% 
+  pull() 
+bd_fill_values
+```
+
+Create the `bd_fill` index column
+
+```{r create-gap-filled-index}
+data_subset <- data_subset %>% 
+  mutate(bd_filled = ifelse(bulk_density %in% bd_fill_values, "yes", "no")) 
+data_subset
+```
+
+Identified a weird row for a single profile `id` missing all important variables. 
+
+Drop the weird row `id` = `BC09-07` where `horizon` = `Cg`
+
+```{r remove-weird-row}
+data_subset <- data_subset %>% 
+  filter(id != "BC09-06" | horizon != "Cg")
+```
+
+## Extract soil horizon from `horizon` and call it `horizon_simple`
+```{r create-horizon-simple}
+data_subset$horizon_simple = substr(data_subset$horizon,1,1)
+data_subset
+```
+## Calculate carbon content for each horizon
+
+```{r mutate-cf-na-to-0}
+data_subset <- data_subset %>%
+ mutate(cf = ifelse(is.na(cf), 0, cf),
+        cf_1_values = as.numeric(cf))
+data_subset
+```
+
+```{r calculate-ccontent-from-function}
+data_subset <- data_subset %>%
+mutate(ccontent = (cconc/100*bulk_density)*
+                  (100*100*total_depth)*
+                  ((100 - cf)/100))
+data_subset
+```
+
+
+## Save the tidy dataset as a .csv
+
+```{r}
+write.csv(data_subset, 'Sandborn_Lewis_Tidy.csv')
+```
+
+## Create summary tables for `carbon_stock`, `carbon_stock_1m`
+
+```{r carbon_stock-summary-table}
+describeBy(data_subset, group=data_subset$carbon_stock)
+```
+
+```{r carbon_stock_1m-summary-table}
+describeBy(data_subset, group=data_subset$carbon_stock_1m)
+```
