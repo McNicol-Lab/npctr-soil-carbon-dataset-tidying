@@ -1,0 +1,135 @@
+---
+title: "Kranabetter_Banner_Tidy"
+output: html_document
+date: '2022-04-27'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-packages, include = FALSE}
+# install.packages("tindyverse")
+# install.packages("readxl")
+library("readxl")
+library("tidyverse")
+library("dplyr")
+library("openintro")
+library("skimr")
+library("janitor")
+library("psych")
+library("stringr")
+```
+
+
+## R Markdown
+## Explore Kranabetter Batter data, clean col names, convert to lowercase, tidy data classes
+
+### Add another line in your mutate function to calculate horizon depth >- 100 cm
+
+```{r read-in-krana-better-banner-data, warning = F}
+kranabetter_data_subset <- read_excel("2 Kranabetter Banner FINAL.xlsx") %>%  
+  janitor::clean_names() %>% 
+  rename_with(tolower) %>%
+  mutate(bulk_density = as.numeric(bulk_density),
+         depth1 = as.numeric(depth1),
+         depth2 = as.numeric(depth2),
+         cconc = as.numeric(cconc),
+         total_depth=depth2-depth1,
+         depth_100 = ifelse(depth2<=-100,
+                            abs(depth1-(-100)),
+                            abs(depth2-depth1)))
+glimpse(kranabetter_data_subset)
+```
+## Retain Tidy Excel Columns A-F,J-L, Q, S
+
+```{r new-dataframe-with-select-variables}
+kranabetter_data_subset <- kranabetter_data_subset %>% 
+  select(source, 
+         id, 
+         order, 
+         lat, 
+         lon, 
+         latlon_q, 
+         horizon, 
+         depth1, 
+         depth2, 
+         total_depth, 
+         bulk_density, 
+         cf, 
+         cconc,
+         ccontent_1m,
+         depth_100)
+glimpse(kranabetter_data_subset)
+``` 
+## Create an index column specifiying if a value is gap-filled or not
+## All bulk_density is gapfilled in kranabetter-batter dataset
+
+Create a vector of gap-filled values
+
+```{r gap-filled-values}
+bd_fill_values <- kranabetter_data_subset %>%
+  select(bulk_density) %>%
+  filter(!is.na(bulk_density)) %>% 
+  distinct() %>% 
+  pull() 
+bd_fill_values
+```
+
+## mutate cconc gapfilled columns by making function (see note card)
+
+```{r}
+kranabetter_data_subset <- kranabetter_data_subset %>%
+mutate(slope = (cconc/total_depth),
+       cconc_y = (cconc-(slope*.5*total_depth))
+       )
+kranabetter_data_subset
+```
+
+
+## Extract first soil horizon from 'horizon', name column 'horizon simple'
+```{r create-horizon-simple}
+kranabetter_data_subset$horizon_simple = substr(kranabetter_data_subset$horizon,1,1)
+kranabetter_data_subset
+```
+## Calculate carbon content for each horizon in kranabetter dataset
+
+```{r mutate-na-in-cf-to-0}
+kranabetter_data_subset <- kranabetter_data_subset %>%
+ mutate(cf = ifelse(is.na(cf), 0, cf),
+        cf_1_values = as.numeric(cf))
+glimpse(kranabetter_data_subset)
+```
+
+```{r calculate-ccontent-from-function-for-kranabetter-data}
+kranabetter_data_subset <- kranabetter_data_subset %>%
+mutate(ccontent = (cconc/100*bulk_density)*(100*100*total_depth)*((100 - cf)/100))
+kranabetter_data_subset
+```
+## Create carbon_stock and carbon_stock_1M variables
+```{r create-carbon_stock-variable}
+kranabetter_data_subset <- kranabetter_data_subset %>%
+mutate(carbon_stock = (cconc*total_depth*bulk_density))
+kranabetter_data_subset
+```
+```{r create-carbon_stock_1M-variable}
+kranabetter_data_subset <- kranabetter_data_subset %>%
+mutate(carbon_stock_1M = (ccontent_1m * depth_100 * bulk_density))
+kranabetter_data_subset
+```
+
+## Save the tidy dataset as a .csv
+
+```{r}
+write.csv(kranabetter_data_subset, 'Kranabetter_Banner_Tidy.csv')
+```
+
+## Create summary tables for `carbon_stock`, `carbon_stock_1m`
+
+```{r carbon_stock-summary-table}
+describeBy(kranabetter_data_subset, group=kranabetter_data_subset$carbon_stock)
+```
+
+```{r carbon_stock_1m-summary-table}
+describeBy(kranabetter_data_subset, group=kranabetter_data_subset$carbon_stock_1m)
+```
