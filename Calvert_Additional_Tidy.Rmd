@@ -54,10 +54,12 @@ calvert_additional_data_subset <- calvert_additional_data %>%
          horizon, 
          depth1, 
          depth2, 
-         total_depth, 
+         total_depth,
+         depth_100,
          bulk_density, 
          cf, 
-         cconc)
+         cconc,
+         ccontent_1m)
 glimpse(calvert_additional_data_subset)
 ``` 
 ## Create an index column specifiying if a value is gap-filled or not
@@ -102,6 +104,17 @@ calvert_additional_data_subset
 ```{r calculate-ccontent-from-function-for-calvert-additional-data}
 calvert_additional_data_subset <- calvert_additional_data_subset %>%
 mutate(ccontent = (cconc/100*bulk_density)*(100*100*total_depth)*((100 - cf)/100))
+calvert_additional_data_subset
+```
+## Create carbon_stock and carbon_stock_1M variables
+```{r create-carbon_stock-variable}
+calvert_additional_data_subset <- calvert_additional_data_subset %>%
+mutate(carbon_stock = (cconc*total_depth*bulk_density))
+calvert_additional_data_subset
+```
+```{r create-carbon_stock_1M-variable}
+calvert_additional_data_subset <- calvert_additional_data_subset %>%
+mutate(carbon_stock_1M = (ccontent_1m * depth_100 * bulk_density))
 calvert_additional_data_subset
 ```
 
