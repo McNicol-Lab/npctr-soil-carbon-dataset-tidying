@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r load-packages, include = FALSE}
-# install.packages("tindyverse")
+# install.packages("tidyverse")
 # install.packages("readxl")
 library("readxl")
 library("tidyverse")
@@ -31,22 +31,25 @@ library("stringr")
 data <- read_excel("5 Shaw Full Profiles.xlsx") %>%  
   janitor::clean_names() %>% 
   rename_with(tolower)%>%
-   mutate(bulk_density = as.numeric(bulk_density))
+  mutate(bulk_density = as.numeric(bulk_density))
 glimpse(data)
 ```
 
 ## Retain Tidy Excel Columns A-F,J-L, Q, S; create new dataframe
-## Variables in this set are weird. Need to make a 'source' variable with every row being 'Shaw et. al 2018'.
-## Need lat, lon, latlon_q, depth_1, depth_2, total_depth, depth_100, and cconc
+## Variables in this set are weird. 
+## 1. You need to select columns you want to keep/drop from `Shaw Full Profiles`
+##        You can drop the calculated columns that you will calculate yourself (ccontent, etc.)
+## 2. Select columns you want from `Shaw (only sites)`
+## 3. Join the two dataframes
+## 4. Calculate carbon stock columns and sum in summary tables
 
 ```{r new-dataframe-with-select-variables, eval=T, echo=FALSE, message=FALSE, warning=FALSE}
 data_subset <- data %>% 
-  select(horizon_id,
+  select(location_id,
          horizon, 
          upper_hzn_limit, 
          hzn_thickness,
-         bulk_density,
-         ccontent_1m)
+         bulk_density) 
 glimpse(data_subset)
 ``` 
 
