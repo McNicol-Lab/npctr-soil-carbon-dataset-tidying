@@ -34,7 +34,7 @@ X3_Calvert_FINAL
 ### Add another line in your mutate function to calculate horizon depth >- 100 cm
 
 ```{r read-in-calvert-final, warning = F}
-data <- X3_Calvert_FINAL %>%  
+data_calvert_final <- X3_Calvert_FINAL %>%  
   janitor::clean_names() %>% 
   rename_with(tolower) %>%
   mutate(bulk_density = as.numeric(bulk_density),
@@ -45,12 +45,12 @@ data <- X3_Calvert_FINAL %>%
          depth_100 = ifelse(depth2<=-100,
                             abs(depth1-(-100)),
                             abs(depth2-depth1)))
-glimpse(data)
+glimpse(data_calvert_final)
 ```
 ## Retain Relevant Tidy Excel Columns
 
 ```{r new-dataframe-with-select-variables}
-data_subset <- data %>% 
+subset_calvert_final <- data_calvert_final  %>% 
   select(source, 
          id, 
          order, 
@@ -66,7 +66,7 @@ data_subset <- data %>%
          cf, 
          cconc,
          ccontent_1m)
-glimpse(data_subset)
+glimpse(subset_calvert_final)
 ``` 
 ## Create an index column specifiying if a value is gap-filled or not
 ## All bulk_density is gapfilled in Calvert_Final dataset
@@ -74,73 +74,73 @@ glimpse(data_subset)
 Create a vector of gap-filled values
 
 ```{r gap-filled-values}
-bd_fill_values <- data_subset %>%
+bd_fill_values_calvert <- subset_calvert_final  %>%
   select(bulk_density) %>%
   filter(!is.na(bulk_density)) %>% 
   distinct() %>% 
   pull() 
-bd_fill_values
+bd_fill_values_calvert
 ```
 
 ## mutate cconc gapfilled columns by making function (see note card)
 
 ```{r}
-data_subset <- data_subset %>%
+subset_calvert_final  <- subset_calvert_final  %>%
 mutate(slope = (cconc/total_depth),
        cconc_y = (cconc-(slope*.5*total_depth))
        )
-data_subset
+subset_calvert_final 
 ```
 
 
 ## Extract first soil horizon from 'horizon', name column 'horizon simple'
 ```{r create-horizon-simple}
-data_subset$horizon_simple = substr(data_subset$horizon,1,1)
-data_subset
+subset_calvert_final$horizon_simple = substr(subset_calvert_final$horizon,1,1)
+subset_calvert_final
 ```
 ## Calculate carbon content for each horizon in kranabetter dataset
 
 ```{r mutate-na-in-cf-to-0}
-data_subset <- data_subset %>%
+subset_calvert_final <- subset_calvert_final %>%
  mutate(cf = ifelse(is.na(cf), 0, cf),
         cf_1_values = as.numeric(cf))
-data_subset
+subset_calvert_final
 ```
 
 ```{r calculate-ccontent-from-function}
-data_subset <- data_subset %>%
+subset_calvert_final <- subset_calvert_final %>%
 mutate(ccontent = (cconc/100*bulk_density)*(100*100*total_depth)*((100 - cf)/100))
-data_subset
+subset_calvert_final
 ```
 ## Create carbon_stock and carbon_stock_1M variables
 ```{r create-carbon_stock-variable}
-data_subset <- data_subset %>%
+subset_calvert_final <- subset_calvert_final %>%
 mutate(carbon_stock = (cconc*total_depth*bulk_density))
-data_subset
+subset_calvert_final
 ```
 ```{r create-carbon_stock_1M-variable}
-data_subset <- data_subset %>%
+subset_calvert_final<- subset_calvert_final %>%
 mutate(carbon_stock_1M = (ccontent_1m * depth_100 * bulk_density))
-data_subset
+subset_calvert_final
 ```
 
 ## Save the tidy dataset as a .csv
 
 ```{r}
-write.csv(data_subset, 'Calvert_Data_Tidy.csv')
+write.csv(subset_calvert_final, 'Calvert_Data_Tidy.csv')
 ```
 
 ## Create summary tables for `carbon_stock`, `carbon_stock_1m`
 
 ```{r carbon_stock-summary-table}
-describeBy(data_subset, 
-           group=data_subset$carbon_stock
+describeBy(subset_calvert_final, 
+           group=subset_calvert_final$carbon_stock
            )
 ```
 
 ```{r carbon_stock_1m-summary-table}
-describeBy(data_subset, 
-           group=data_subset$carbon_stock_1m
+describeBy(subset_calvert_final, 
+           group=subset_calvert_final$carbon_stock_1m
            )
 ```
 
