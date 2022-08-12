@@ -28,7 +28,7 @@ library("stringr")
 
 ```{r read-in-calvert-additional-data, warning = F}
 
-calvert_additional_data <- read_excel("4 Calvert Additional FINAL.xlsx") %>%  
+data_calvert_additional <- read_excel("4 Calvert Additional FINAL.xlsx") %>%  
   janitor::clean_names() %>% 
   rename_with(tolower) %>%
   mutate(bulk_density = as.numeric(bulk_density),
@@ -39,12 +39,12 @@ calvert_additional_data <- read_excel("4 Calvert Additional FINAL.xlsx") %>%
          depth_100 = ifelse(depth2<=-100,
                             abs(depth1-(-100)),
                             abs(depth2-depth1)))
-glimpse(calvert_additional_data)
+glimpse(data_calvert_additional)
 ```
 ## Retain Tidy Excel Columns A-F,J-L, Q, S
 
 ```{r new-dataframe-with-select-variables}
-calvert_additional_data_subset <- calvert_additional_data %>% 
+subset_calvert_additional <- data_calvert_additional %>% 
   select(source, 
          id, 
          order, 
@@ -60,7 +60,7 @@ calvert_additional_data_subset <- calvert_additional_data %>%
          cf, 
          cconc,
          ccontent_1m)
-glimpse(calvert_additional_data_subset)
+glimpse(subset_calvert_additional)
 ``` 
 ## Create an index column specifiying if a value is gap-filled or not
 ## All bulk_density is gapfilled in calvert additional dataset
@@ -68,68 +68,68 @@ glimpse(calvert_additional_data_subset)
 Create a vector of gap-filled values
 
 ```{r gap-filled-values}
-bd_fill_values <- calvert_additional_data_subset %>%
+bd_fill_values_calvert_additional <- subset_calvert_additional %>%
   select(bulk_density) %>%
   filter(!is.na(bulk_density)) %>% 
   distinct() %>% 
   pull() 
-bd_fill_values
+bd_fill_values_calvert_additional
 ```
 
 ## mutate cconc gapfilled columns by making function (see note card)
 
 ```{r}
-calvert_additional_data_subset <- calvert_additional_data_subset %>%
+subset_calvert_additional <- subset_calvert_additional %>%
 mutate(slope = (cconc/total_depth),
        cconc_y = (cconc-(slope*.5*total_depth))
        )
-calvert_additional_data_subset
+subset_calvert_additional
 ```
 
 
 ## Extract first soil horizon from 'horizon', name column 'horizon simple'
 ```{r create-horizon-simple}
-calvert_additional_data_subset$horizon_simple = substr(calvert_additional_data_subset$horizon,1,1)
-calvert_additional_data_subset
+subset_calvert_additional$horizon_simple = substr(subset_calvert_additional$horizon,1,1)
+subset_calvert_additional
 ```
 ## Calculate carbon content for each horizon in calvert_additional dataset
 
 ```{r mutate-na-in-cf-to-0}
-calvert_additional_data_subset <- calvert_additional_data_subset %>%
+subset_calvert_additional <- subset_calvert_additional %>%
  mutate(cf = ifelse(is.na(cf), 0, cf),
         cf_1_values = as.numeric(cf))
-calvert_additional_data_subset
+subset_calvert_additional
 ```
 
 ```{r calculate-ccontent-from-function-for-calvert-additional-data}
-calvert_additional_data_subset <- calvert_additional_data_subset %>%
+subset_calvert_additional <- subset_calvert_additional %>%
 mutate(ccontent = (cconc/100*bulk_density)*(100*100*total_depth)*((100 - cf)/100))
-calvert_additional_data_subset
+subset_calvert_additional
 ```
 ## Create carbon_stock and carbon_stock_1M variables
 ```{r create-carbon_stock-variable}
-calvert_additional_data_subset <- calvert_additional_data_subset %>%
+subset_calvert_additional <- subset_calvert_additional %>%
 mutate(carbon_stock = (cconc*total_depth*bulk_density))
-calvert_additional_data_subset
+subset_calvert_additional
 ```
 ```{r create-carbon_stock_1M-variable}
-calvert_additional_data_subset <- calvert_additional_data_subset %>%
+subset_calvert_additional <- subset_calvert_additional %>%
 mutate(carbon_stock_1M = (ccontent_1m * depth_100 * bulk_density))
-calvert_additional_data_subset
+subset_calvert_additional
 ```
 
 ## Save the tidy dataset as a .csv
 
 ```{r}
-write.csv(calvert_additional_data_subset, 'Calvert_Additional_Final_Tidy.csv')
+write.csv(subset_calvert_additional, 'Calvert_Additional_Final_Tidy.csv')
 ```
 
 ## Create summary tables for `carbon_stock`, `carbon_stock_1m`
 
 ```{r carbon_stock-summary-table}
-describeBy(calvert_additional_data_subset, group=calvert_additional_data_subset$carbon_stock)
+describeBy(subset_calvert_additional, group=subset_calvert_additional$carbon_stock)
 ```
 
 ```{r carbon_stock_1m-summary-table}
-describeBy(calvert_additional_data_subset, group=calvert_additional_data_subset$carbon_stock_1m)
+describeBy(subset_calvert_additional, group=subset_calvert_additional$carbon_stock_1m)
 ```
