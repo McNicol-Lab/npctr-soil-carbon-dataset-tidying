@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## R Markdown
 
 ```{r load-packages, include = FALSE}
-# install.packages("tindyverse")
+# install.packages("tidyverse")
 # install.packages("readxl")
 library("readxl")
 library("tidyverse")
@@ -29,24 +29,29 @@ library("stringr")
 
 ### Add another line in your mutate function to calculate horizon depth >- 100 cm
 ```{r}
-data <- read_excel("6 Seak NRCS FINAL.xlsx")
-glimpse(data)
+read_excel("6 Seak NRCS FINAL.xlsx") %>% 
+  glimpse()
 ```
-
 
 ```{r read-in-seak-nrcs-final-data, warning = F}
 data <- read_excel("6 Seak NRCS FINAL.xlsx") %>% 
   janitor::clean_names() %>% 
   rename_with(tolower) %>%
-  mutate(bulk density = as.numeric(bulk_density),
-         depth1 = as.numeric(depth1),
-         depth2 = as.numeric(depth2),
-         cconc = as.numeric(cconc),
-         total_depth=depth2-depth1,
-         depth_100 = ifelse(depth2<=-100,
-                            abs(depth1-(-100)),
-                            abs(depth2-depth1))
-  )
+    rename(row = row_1,
+         order = order_4,
+         horizon = horizon_11,
+         bulk_density_shaw = bulk_density_shaw_19)
+  
+  # mutate(bulk_density = as.numeric(bulk_density),
+  #        depth1 = as.numeric(depth1),
+  #        depth2 = as.numeric(depth2),
+  #        cconc = as.numeric(cconc),
+  #        total_depth=depth2-depth1,
+  #        depth_100 = ifelse(depth2<=-100,
+  #                           abs(depth1-(-100)),
+  #                           abs(depth2-depth1)) 
+  # ) %>% 
+
 glimpse(data)
 ```
 
