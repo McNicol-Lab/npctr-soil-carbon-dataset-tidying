@@ -42,6 +42,7 @@ glimpse(data)
 ```
 
 ## Retain Tidy Excel Columns A-F,J-L, Q, S; create new dataframe
+## Columns A-F, J-L, Q, S, are 'source, id, order, lat, lon, latlon_q, horizon, depth1, depth2, total_depth, bulk_density, cf, cconc'
 
 ```{r new-dataframe-with-select-variables}
 data_subset <- data %>% 
@@ -61,7 +62,7 @@ data_subset <- data %>%
 glimpse(data_subset)
 ``` 
 
-## Create an index column specifiying if a value is gap-filled or not
+## Created index column specifiying if a value is gap-filled or not
 
 Create a vector of gap-filled values
 
@@ -83,9 +84,9 @@ data_subset <- data_subset %>%
 data_subset
 ```
 
-Identified a weird row for a single profile `id` missing all important variables. 
+## Identified a weird row for a single profile `id` missing all important variables. 
 
-Drop the weird row `id` = `BC09-07` where `horizon` = `Cg`
+## Dropped the weird row `id` = `BC09-07` where `horizon` = `Cg`
 
 ```{r remove-weird-row}
 data_subset <- data_subset %>% 
@@ -97,15 +98,14 @@ data_subset <- data_subset %>%
 data_subset$horizon_simple = substr(data_subset$horizon,1,1)
 data_subset
 ```
-## Calculate carbon content for each horizon
-
+## Create a fucntion to calculate carbon content for each horizon
 ```{r mutate-cf-na-to-0}
 data_subset <- data_subset %>%
  mutate(cf = ifelse(is.na(cf), 0, cf),
         cf_1_values = as.numeric(cf))
 data_subset
 ```
-
+## Calculate carbon content for each horizon 
 ```{r calculate-ccontent-from-function}
 data_subset <- data_subset %>%
 mutate(ccontent = (cconc/100*bulk_density)*
@@ -138,12 +138,3 @@ describeBy(data_subset, group=data_subset$carbon_stock)
 ```{r carbon_stock_1m-summary-table}
 describeBy(data_subset, group=data_subset$carbon_stock_1m)
 ```
-
-
-
-
-
-
-
- 
-

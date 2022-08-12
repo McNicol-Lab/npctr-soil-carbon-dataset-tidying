@@ -1,0 +1,136 @@
+---
+title: "Calvert_final"
+output: html_document
+date: '2022-04-27'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-packages, include = FALSE}
+# install.packages("tindyverse")
+# install.packages("readxl")
+library("readxl")
+library("tidyverse")
+library("dplyr")
+library("openintro")
+library("skimr")
+library("janitor")
+library("psych")
+```
+
+
+## R Markdown
+## Explore Calvert_Final Batter data, clean col names, convert to lowercase, tidy data classes
+```{r}
+library(readxl)
+X3_Calvert_FINAL <- read_excel("3 Calvert FINAL.xlsx")
+View(X3_Calvert_FINAL)
+```
+
+
+### Add another line in your mutate function to calculate horizon depth >- 100 cm
+
+```{r read-in-krana-better-banner-data, warning = F}
+calvert_dataset <- X3_Calvert_FINAL %>%  
+  janitor::clean_names() %>% 
+  rename_with(tolower) %>%
+  mutate(bulk_density = as.numeric(bulk_density),
+         depth1 = as.numeric(depth1),
+         depth2 = as.numeric(depth2),
+         cconc = as.numeric(cconc),
+         total_depth=depth2-depth1,
+         depth_100 = ifelse(depth2<=-100,
+                            abs(depth1-(-100)),
+                            abs(depth2-depth1)))
+glimpse(calvert_dataset)
+```
+## Retain Tidy Excel Columns A-F,J-L, Q, S
+
+```{r new-dataframe-with-select-variables}
+calvert_dataset <- calvert_dataset %>% 
+  select(source, 
+         id, 
+         order, 
+         lat, 
+         lon, 
+         latlon_q, 
+         horizon, 
+         depth1, 
+         depth2, 
+         total_depth, 
+         bulk_density, 
+         cf, 
+         cconc)
+glimpse(calvert_dataset)
+``` 
+## Create an index column specifiying if a value is gap-filled or not
+## All bulk_density is gapfilled in kranabetter-batter dataset
+
+Create a vector of gap-filled values
+
+```{r gap-filled-values}
+bd_fill_values <- calvert_dataset %>%
+  select(bulk_density) %>%
+  filter(!is.na(bulk_density)) %>% 
+  distinct() %>% 
+  pull() 
+bd_fill_values
+```
+
+## mutate cconc gapfilled columns by making function (see note card)
+
+```{r}
+calvert_dataset <- calvert_dataset %>%
+mutate(slope = (cconc/total_depth),
+       cconc_y = (cconc-(slope*.5*total_depth))
+       )
+calvert_dataset
+```
+
+
+## Extract first soil horizon from 'horizon', name column 'horizon simple'
+```{r create-horizon-simple}
+calvert_dataset$horizon_simple = substr(calvert_dataset$horizon,1,1)
+calvert_dataset
+```
+## Calculate carbon content for each horizon in kranabetter dataset
+
+```{r mutate-na-in-cf-to-0}
+calvert_dataset <- calvert_dataset %>%
+ mutate(cf = ifelse(is.na(cf), 0, cf),
+        cf_1_values = as.numeric(cf))
+calvert_dataset
+```
+
+```{r calculate-ccontent-from-function-for-kranabetter-data}
+calvert_dataset <- calvert_dataset %>%
+mutate(ccontent = (cconc/100*bulk_density)*(100*100*total_depth)*((100 - cf)/100))
+calvert_dataset
+```
+
+## Save the tidy dataset as a .csv
+
+```{r}
+write.csv(kranabetter_data_subset, 'Kranabetter_Banner_Tidy.csv')
+```
+
+## Create summary tables for `carbon_stock`, `carbon_stock_1m`
+
+```{r carbon_stock-summary-table}
+describeBy(calvert_dataset, 
+           group=calvert_dataset$carbon_stock
+           )
+```
+
+```{r carbon_stock_1m-summary-table}
+describeBy(calvert_dataset, 
+           group=calvert_dataset$carbon_stock_1m
+           )
+```
+
