@@ -25,21 +25,17 @@ library("psych")
 ## Explore data, clean col names, convert to lowercase, tidy data classes
 
 ```{r read-in-shaw-only-sites, eval=T, echo=FALSE, message=FALSE, warning=FALSE}
-library(readxl)
-X5_Shaw_only_sites <- read_excel("5 Shaw (only sites).xlsx")
-X5_Shaw_only_sites
+shaw_only_sites_data <- read_excel("5 Shaw (only sites).xlsx") %>%
+  janitor::clean_names() %>% 
+  rename_with(tolower)
+shaw_only_sites_data
 ```
 
 
 ### Add another line in your mutate function to calculate horizon depth >- 100 cm
 
-```{r lower-variable-names, warning = F}
-data_shaw_only_sites <- X5_Shaw_only_sites %>%  
-  janitor::clean_names() %>% 
-  rename_with(tolower)
-glimpse(data_shaw_only_sites)
-```
-## Retain Tidy Excel Columns A-F,J-L, Q, S
+
+## Retain Relevant Tidy Excel Columns 
 ## Retaining these idenitites are not needed
 
 
