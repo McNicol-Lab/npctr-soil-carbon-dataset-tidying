@@ -23,13 +23,10 @@ library("psych")
 library("stringr")
 ```
 
-
-## R Markdown
-
 ## Explore data, clean col names, convert to lowercase
 ### Add another line in your mutate function to calculate horizon depth >- 100 cm
 
-```{r read-in-d'armore-2002-final-data, warning = F}
+```{r read-in-darmore-2002-final-data, warning=F}
 data_darmore <- read_excel("7 D'Armore 2002 FINAL.xlsx") %>%  
   janitor::clean_names() %>% 
   rename_with(tolower) %>%
@@ -108,7 +105,7 @@ Create the `bd_fill` index column
 
 ```{r create-gap-filled-index}
 subset_darmore <- subset_darmore %>% 
-  mutate(bd_filled = ifelse(bulk_density %in% bd_fill_values, "yes", "no")) 
+  mutate(bd_filled = ifelse(bulk_density %in% bd_fill_values_darmore, "yes", "no")) 
 subset_darmore
 ```
 
