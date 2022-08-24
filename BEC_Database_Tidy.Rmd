@@ -31,42 +31,13 @@ library("stringr")
 ### Add another line in your mutate function to calculate horizon depth >- 100 cm
 
 ```{r read-in-data, warning = F}
-data_bec_database<- read_excel("8 BEC Database.xlsx") %>%  
-  janitor::clean_names() %>% 
-  rename_with(tolower) %>%
-  mutate(bulk_density = as.numeric(bulk_density),
-         depth1 = as.numeric(depth1),
-         depth2 = as.numeric(depth2),
-         cconc = as.numeric(cconc),
-         ccontent_1m = as.numeric(ccontent_1m),
-         total_depth=depth2-depth1,
-         depth_100 = ifelse(depth2<=-100,
-                            abs(depth1-(-100)),
-                            abs(depth2-depth1))
-  )
+data_bec_database<- read_excel("8 BEC Database.xlsx")
 glimpse(data_bec_database)
 ```
 
-## Retain Tidy Excel Columns A-F,J-L, Q, S; create new dataframe
+## Retain Tidy Excel Columns relevant col; create new dataframe
 
 ```{r new-dataframe-with-select-variables}
-data_subset <- data %>% 
-  select(source, 
-         id, 
-         order, 
-         lat, 
-         lon, 
-         latlon_q, 
-         horizon, 
-         depth1, 
-         depth2, 
-         total_depth,
-         bulk_density, 
-         cf, 
-         cconc,
-         ccontent_1m,
-         depth_100)
-glimpse(data_subset)
 ``` 
 
 ## Create an index column specifiying if a bulk density value is gap-filled or not
@@ -74,54 +45,33 @@ glimpse(data_subset)
 Create a vector of gap-filled values
 
 ```{r bulk-density-gap-filled-values}
-bd_fill_values <- data_subset %>%
-  select(bulk_density) %>%
-  slice(1:3, 8:10, 16:28, 34:39, 46:146) %>%
-  filter(!is.na(bulk_density)) %>% 
-  distinct() %>% 
-  pull() 
-bd_fill_values
 ```
 
 Create the `bd_fill` index column
 
 ```{r create-gap-filled-index}
-data_subset <- data_subset %>% 
-  mutate(bd_filled = ifelse(bulk_density %in% bd_fill_values, "yes", "no")) 
-data_subset
+
 ```
 
 ## Extract soil horizon from `horizon` and call it `horizon_simple`
 ```{r create-horizon-simple}
-data_subset$horizon_simple = substr(data_subset$horizon,1,1)
-data_subset
+
 ```
 ## Calculate carbon content for each horizon
 
 ```{r mutate-cf-na-to-0}
-data_subset <- data_subset %>%
- mutate(cf = ifelse(is.na(cf), 0, cf),
-        cf_1_values = as.numeric(cf))
-data_subset
+
 ```
 
 ```{r calculate-ccontent-from-function}
-data_subset <- data_subset %>%
-mutate(ccontent = (cconc/100*bulk_density)*
-                  (100*100*total_depth)*
-                  ((100 - cf)/100))
-data_subset
+
 ```
 ## Create carbon_stock and carbon_stock_1M variables
 ```{r create-carbon_stock-variable}
-data_subset <- data_subset %>%
-mutate(carbon_stock = (cconc*total_depth*bulk_density))
-data_subset
+
 ```
 ```{r create-carbon_stock_1M-variable}
-data_subset <- data_subset %>%
-mutate(carbon_stock_1M = (ccontent_1m * depth_100 * bulk_density))
-data_subset
+
 ```
 
 
@@ -129,18 +79,18 @@ data_subset
 
 ## Save the tidy dataset as a .csv
 
-```{r}
-write.csv(data_subset, 'Sandborn_Lewis_Tidy.csv')
+```{r write-csv}
+
 ```
 
 ## Create summary tables for `carbon_stock`, `carbon_stock_1m`
 
 ```{r carbon_stock-summary-table}
-describeBy(data_subset, group=data_subset$carbon_stock)
+
 ```
 
 ```{r carbon_stock_1m-summary-table}
-describeBy(data_subset, group=data_subset$carbon_stock_1m)
+
 ```
 
 
